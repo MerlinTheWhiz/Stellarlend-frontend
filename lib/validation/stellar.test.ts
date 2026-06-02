@@ -2,13 +2,13 @@ import { describe, expect, test } from 'vitest';
 import { isAccountId, isMuxedAccount, isContractId } from '@/lib/validation/stellar';
 
 // Known valid/invalid sample addresses (using Stellar testnet examples)
-const validG = 'GB3JDWCQ5L5OPXKMG5B5X6K3X6JH6S2YVZB5A2UOCTMDEK5R5R5N3Y5R'; // example valid G address length 56
-const invalidG = 'GB3JDWCQ5L5OPXKMG5B5X6K3X6JH6S2YVZB5A2UOCTMDEK5R5R5N3Y5X'; // altered last char
+const validG = 'GAKCNH54SWY4R2SAMIC2M3OLRRMIA4LYAWJJIRCJCYCBBOIO5Z3PMPJY'; // valid Ed25519 public key
+const invalidG = 'GAKCNH54SWY4R2SAMIC2M3OLRRMIA4LYAWJJIRCJCYCBBOIO5Z3PMPJX'; // altered last char
 
-const validM = 'MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQ'; // placeholder valid M format (56+ chars)
+const validM = 'MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'; // valid M format (56 chars)
 const invalidM = 'MZINVALIDADDRESS1234567890';
 
-const validC = 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQ'; // placeholder valid C format
+const validC = 'CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'; // valid C format (56 chars)
 const invalidC = 'CZINVALIDADDRESS1234567890';
 
 describe('Stellar address validation helpers', () => {

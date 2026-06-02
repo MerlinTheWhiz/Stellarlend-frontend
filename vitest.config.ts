@@ -86,6 +86,9 @@ export default defineConfig({
           include: [
             "types/enums.test.ts",
             "app/api/transactions/route.test.ts",
+            "lib/validation/validators.test.ts",
+            "lib/validation/stellar.test.ts",
+            "app/api/quote/route.test.ts",
           ],
         },
       },

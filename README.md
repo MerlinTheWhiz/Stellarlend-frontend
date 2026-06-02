@@ -268,6 +268,37 @@ The server-side API surface is documented in two places:
 | `GET` | `/api/notifications` | Required | List in-app notifications |
 | `PATCH` | `/api/notifications/:id` | Required | Mark notification as read |
 
+### Validation
+
+Lending and borrowing API routes validate input payloads with **Zod** schemas defined in `lib/validation/`.
+
+| Refinement / Schema | File | Description |
+|---|---|---|
+| `StellarAddress` | `lib/validation/validators.ts` | Refines `z.string()` — accepts G (Ed25519 public key, checksum-validated via `@stellar/stellar-sdk`), M (muxed), and C (contract) Stellar addresses |
+| `I128String` | `lib/validation/validators.ts` | Refines `z.string()` — validates that the string is a signed 128-bit integer in range `[-(2^127), 2^127-1]` (e.g. `"1000"`, `"-5"`) |
+| `lendingTxBuildRequestSchema` | `lib/validation/schemas/lending.ts` | Validates `POST /api/tx/build` bodies — enforces `type` enum, `sourceAccount` via `StellarAddress`, `data.amount` as positive number or i128 string, `data.interestRate` as positive finite number, and all optional lending fields |
+| `lendingQuoteRequestSchema` | `lib/validation/schemas/lending.ts` | Validates `POST /api/quote` bodies — enforces `type` enum and `data` shape via `lendingDataSchema` |
+
+#### Error Response Shape
+
+When Zod validation fails the API returns a `400` response with the following body:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": [
+      { "field": "sourceAccount", "message": "Invalid Stellar address..." },
+      { "field": "data.amount", "message": "Amount must be positive" }
+    ]
+  }
+}
+```
+
+Each entry in `details`:
+- `field` — dot-separated path to the invalid property (e.g. `data.asset`, `sourceAccount`)
+- `message` — human-readable description of the validation failure
+
 ## 🔗 Helpful Links
 
 ### Documentation

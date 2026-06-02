@@ -1,19 +1,9 @@
 import { NextResponse } from "next/server";
-import type { LendingData } from "@/lib/lending/types";
-import { calculateQuote, type LendingQuoteType } from "@/lib/lending/quote";
+import { calculateQuote } from "@/lib/lending/quote";
+import { lendingQuoteRequestSchema } from "@/lib/validation/schemas/lending";
+import { formatZodErrors } from "@/lib/validation/validators";
 
 export const runtime = "nodejs";
-
-type QuoteRequestBody = {
-  type: LendingQuoteType;
-  data: LendingData;
-};
-
-const invalidBody = () =>
-  NextResponse.json(
-    { error: { code: "INVALID_INPUT", message: "Invalid request body." } },
-    { status: 400 }
-  );
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -21,23 +11,21 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return invalidBody();
+    return NextResponse.json(
+      { error: { code: "INVALID_INPUT", message: "Invalid request body." } },
+      { status: 400 }
+    );
   }
 
-  const payload = body as Partial<QuoteRequestBody>;
-
-  if (!payload || typeof payload !== "object") return invalidBody();
-
-  if (
-    payload.type !== "lend" &&
-    payload.type !== "borrow"
-  ) {
-    return invalidBody();
+  const parsed = lendingQuoteRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: formatZodErrors(parsed.error) },
+      { status: 400 }
+    );
   }
 
-  if (!payload.data || typeof payload.data !== "object") return invalidBody();
-
-  const outcome = calculateQuote(payload.type, payload.data as LendingData);
+  const outcome = calculateQuote(parsed.data.type, parsed.data.data);
 
   if (!outcome.ok) {
     return NextResponse.json({ error: outcome.error }, { status: 400 });

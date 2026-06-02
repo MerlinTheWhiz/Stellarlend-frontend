@@ -1,4 +1,5 @@
 import type { LendingData } from '@/lib/lending/types';
+import { lendingTxBuildRequestSchema } from '@/lib/validation/schemas/lending';
 
 export type SorobanRpcError = {
   code: number | string;
@@ -34,24 +35,8 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
 
-const isValidStellarPublicKey = (value: unknown): value is string =>
-  typeof value === 'string' && /^[G][A-Z2-7]{55}$/.test(value);
-
 export function isTxBuildRequest(value: unknown): value is TxBuildRequest {
-  if (!isObject(value)) return false;
-  if (value.type !== 'lend' && value.type !== 'borrow') return false;
-  if (!isValidStellarPublicKey(value.sourceAccount)) return false;
-  if (!isObject(value.data)) return false;
-
-  const data = value.data as Record<string, unknown>;
-  if (!isNonEmptyString(data.asset)) return false;
-  if (typeof data.amount !== 'number') return false;
-  if (typeof data.interestRate !== 'number') return false;
-  if (data.duration != null && typeof data.duration !== 'number') return false;
-  if (data.collateral != null && !isNonEmptyString(data.collateral)) return false;
-  if (data.collateralAmount != null && typeof data.collateralAmount !== 'number') return false;
-
-  return true;
+  return lendingTxBuildRequestSchema.safeParse(value).success;
 }
 
 export function isTxSubmitRequest(value: unknown): value is TxSubmitRequest {

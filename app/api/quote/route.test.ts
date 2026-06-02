@@ -61,7 +61,7 @@ describe("POST /api/quote", () => {
     expect(json.result.dailyEarnings).toBeCloseTo(10 / 30, 10);
   });
 
-  it("rejects invalid input", async () => {
+  it("rejects invalid input with validation error", async () => {
     const response = await POST(
       new Request("http://localhost/api/quote", {
         method: "POST",
@@ -80,7 +80,9 @@ describe("POST /api/quote", () => {
 
     expect(response.status).toBe(400);
     const json = await response.json();
-    expect(json.error.code).toBe("INVALID_INPUT");
+    expect(json.error.code).toBe("VALIDATION_ERROR");
+    expect(json.error.details).toBeDefined();
+    expect(json.error.details[0].field).toBe("data.amount");
   });
 });
 

@@ -16,6 +16,8 @@ import {
   isTxBuildRequest,
   TxBuildRequest,
 } from '@/lib/soroban/tx';
+import { lendingTxBuildRequestSchema } from '@/lib/validation/schemas/lending';
+import { formatZodErrors } from '@/lib/validation/validators';
 
 export const runtime = 'nodejs';
 
@@ -24,6 +26,9 @@ const invalidBody = () =>
     { error: { code: 'INVALID_INPUT', message: 'Invalid request body.' } },
     { status: 400 },
   );
+
+const validationFailure = (error: ReturnType<typeof formatZodErrors>) =>
+  NextResponse.json({ error }, { status: 400 });
 
 const rpcFailure = () =>
   NextResponse.json(
@@ -45,8 +50,9 @@ export async function POST(request: NextRequest) {
     return invalidBody();
   }
 
-  if (!isTxBuildRequest(body)) {
-    return invalidBody();
+  const parsed = lendingTxBuildRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return validationFailure(formatZodErrors(parsed.error));
   }
 
   const session = await getSession();
